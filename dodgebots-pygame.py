@@ -20,7 +20,7 @@ FIELD_WIDTH = SCREEN_WIDTH - 10
 FIELD_HEIGHT = 515
 BORDER_THICKNESS = 5
 
-bc.get_size(FIELD_WIDTH, FIELD_HEIGHT)
+bc.get_size(FIELD_WIDTH, FIELD_HEIGHT, SCREEN_HEIGHT)
 
 # Screws // lives
 screw_img = pygame.image.load(".//assets/screw.png")
@@ -61,7 +61,7 @@ class Ball:
 
 # Game loop
 running = True
-ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+ball = Ball(475, 320)
 blocks = bc.create_blocks()
 
 while running:
