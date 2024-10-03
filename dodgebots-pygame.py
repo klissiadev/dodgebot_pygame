@@ -32,8 +32,8 @@ def draw_lives_player_1(width, lives):
         screw_y = 10
         screen.blit(screw_img, (screw_x, screw_y))
 
-BALL_WIDTH = 30
-BALL_HEIGHT = 30
+BALL_WIDTH = 25
+BALL_HEIGHT = 25
 BALL_RADIUS = BALL_WIDTH / 2
 
 class Ball:
@@ -64,58 +64,63 @@ running = True
 ball = Ball(475, 320)
 blocks = bc.create_blocks()
 
-while running:
-    screen.fill(COLOR_BLACK)
-
-    # Game event
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # Draw field
-    pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
-    pygame.draw.rect(screen,COLOR_WHITE,(BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT),BORDER_THICKNESS)
-    draw_lives_player_1(40,3)
-    draw_lives_player_1(SCREEN_WIDTH - 210,3)
-
-
-    # Draw blocks and ball
-    ball.draw(screen)
-    for block in blocks:
-        block.draw(screen)
-
-    # update screen
-    pygame.display.flip()
-
 # Player Class
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, controls, images):
         super().__init__()
         self.images = {
-            'normal': pygame.image.load(images['normal']).convert_alpha(),
-            'throwing': pygame.image.load(images['throwing']).convert_alpha(),
-            'defense': pygame.image.load(images['defense']).convert_alpha()
+            'normal': pygame.transform.scale(pygame.image.load(images['normal']).convert_alpha(),(60,60)),
+            'throwing': pygame.transform.scale(pygame.image.load(images['throwing']).convert_alpha(),(60,60)),
+            'defense': pygame.transform.scale(pygame.image.load(images['defense']).convert_alpha(),(60,60))
         }
         self.image = self.images['normal']
         self.rect = self.image.get_rect(topleft=(x, y))
         self.x = x
         self.y = y
-        self.speed = 5
+        self.speed = 1
         self.controls = controls  # Set controls
         self.holding_ball = False
         self.defending = False
 
-    def move(self, keys):
-        # movement in 8 directions
+    def move(self,keys, blocks):
+        dx, dy = 0, 0
+
         if keys[self.controls['left']]:
-            self.x -= self.speed
+            dx = -self.speed
         if keys[self.controls['right']]:
-            self.x += self.speed
+            dx = self.speed
         if keys[self.controls['up']]:
-            self.y -= self.speed
+            dy = -self.speed
         if keys[self.controls['down']]:
-            self.y += self.speed
+            dy = self.speed
+
+        self.x += dx
+        self.y += dy
         self.rect.topleft = (self.x, self.y)
+
+        if self.check_collision(blocks):
+            self.x -= dx
+            self.y -= dy
+            self.rect.topleft = (self.x, self.y)
+        self.rect.topleft = (self.x, self.y)
+
+        if self.rect.left < BORDER_THICKNESS:
+            self.rect.left = BORDER_THICKNESS + 5
+        if self.rect.right > FIELD_WIDTH:
+            self.rect.right = FIELD_WIDTH
+        if self.rect.top < 80:
+            self.rect.top = 80
+        if self.rect.bottom > 80 + FIELD_HEIGHT:
+            self.rect.bottom = 70 + FIELD_HEIGHT
+
+
+
+
+    def check_collision(self, blocks):
+        for block in blocks:
+            if self.rect.colliderect(block.rect):
+                return True
+        return False
 
     def update_animation(self):
         if self.defending:
@@ -154,12 +159,12 @@ player_images = {
 }
 
 # Create the two players
-player1 = Player(100, 320, player1_controls, player_images)
-player2 = Player(800, 320, player2_controls, player_images)
+player1 = Player(60, FIELD_HEIGHT/2 + 30, player1_controls, player_images)
+player2 = Player(FIELD_WIDTH - 120, FIELD_HEIGHT/2 + 30, player2_controls, player_images)
 
 # loop
 running = True
-ball = Ball(475, 320)
+ball = Ball(480, 325)
 blocks = bc.create_blocks()
 
 while running:
@@ -169,6 +174,14 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    keys = pygame.key.get_pressed()
+
+    player1.move(keys, blocks)
+    player2.move(keys, blocks)
+
+    player1.update_animation()
+    player2.update_animation()
 
     # Draw field
     pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
