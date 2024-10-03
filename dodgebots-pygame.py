@@ -87,4 +87,104 @@ while running:
     # update screen
     pygame.display.flip()
 
+# Player Class
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y, controls, images):
+        super().__init__()
+        self.images = {
+            'normal': pygame.image.load(images['normal']).convert_alpha(),
+            'throwing': pygame.image.load(images['throwing']).convert_alpha(),
+            'defense': pygame.image.load(images['defense']).convert_alpha()
+        }
+        self.image = self.images['normal']
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.x = x
+        self.y = y
+        self.speed = 5
+        self.controls = controls  # Set controls
+        self.holding_ball = False
+        self.defending = False
+
+    def move(self, keys):
+        # movement in 8 directions
+        if keys[self.controls['left']]:
+            self.x -= self.speed
+        if keys[self.controls['right']]:
+            self.x += self.speed
+        if keys[self.controls['up']]:
+            self.y -= self.speed
+        if keys[self.controls['down']]:
+            self.y += self.speed
+        self.rect.topleft = (self.x, self.y)
+
+    def update_animation(self):
+        if self.defending:
+            self.image = self.images['defense']
+        elif self.holding_ball:
+            self.image = self.images['throwing']
+        else:
+            self.image = self.images['normal']
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect.topleft)
+
+
+# Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
+player1_controls = {
+    'up': pygame.K_w,
+    'down': pygame.K_s,
+    'left': pygame.K_a,
+    'right': pygame.K_d,
+    'defend_or_throw': pygame.K_e
+}
+
+player2_controls = {
+    'up': pygame.K_UP,
+    'down': pygame.K_DOWN,
+    'left': pygame.K_LEFT,
+    'right': pygame.K_RIGHT,
+    'defend_or_throw': pygame.K_SPACE
+}
+
+# Since both players use the same images
+player_images = {
+    'normal': './/players/normal.png',
+    'throwing': './/players/throwing.png',
+    'defense': './/players/defense.png'
+}
+
+# Create the two players
+player1 = Player(100, 320, player1_controls, player_images)
+player2 = Player(800, 320, player2_controls, player_images)
+
+# loop
+running = True
+ball = Ball(475, 320)
+blocks = bc.create_blocks()
+
+while running:
+    screen.fill(COLOR_BLACK)
+
+    # Game event
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Draw field
+    pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
+    pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
+    draw_lives_player_1(40, 3)
+    draw_lives_player_1(SCREEN_WIDTH - 210, 3)
+
+    # Draw players, blocks, and ball
+    player1.draw(screen)
+    player2.draw(screen)
+    ball.draw(screen)
+
+    for block in blocks:
+        block.draw(screen)
+
+    # update screen
+    pygame.display.flip()
+
 pygame.quit()
