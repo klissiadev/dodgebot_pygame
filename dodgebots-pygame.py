@@ -148,9 +148,9 @@ player2_controls = {
 
 # Since both players use the same images
 player_images = {
-    'normal': './/players/normal.png',
-    'throwing': './/players/throwing.png',
-    'defense': './/players/defense.png'
+    'normal': './assets/players/normal.png',
+    'throwing': './assets/players/throwing.png',
+    'defense': './assets/players/defense.png'
 }
 
 # Create the two players
