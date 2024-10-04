@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 BLOCK_WIDTH = 75
@@ -32,10 +34,18 @@ class Block:
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
 
-    '''def apply_effect(self, ball):
-        if self.block_type == "solid":
+    def apply_effect(self, ball, blocks):
+        if self.block_type == "horizontal-solid" or self.block_type == "vertical-solid":
             ball.speed_x = -ball.speed_x
-            ball.speed_y = -ball.speed_y'''
+            ball.speed_y = -ball.speed_y
+        if self.block_type == "horizontal-breakable" or self.block_type == "vertical-breakable":
+            ball.speed_x = -ball.speed_x
+            ball.speed_y = -ball.speed_y
+            blocks.remove(self)
+        if self.block_type == "horizontal-chaotic" or self.block_type == "vertical-chaotic":
+            random_speed = random.randint(105,120)/100
+            ball.speed_x = ball.speed_x * -random_speed
+            ball.speed_y = ball.speed_y * -random_speed
 
 def blocks_overlap(block1, block2):
     return block1.rect.colliderect(block2.rect)
