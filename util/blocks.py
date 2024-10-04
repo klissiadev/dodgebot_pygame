@@ -9,7 +9,7 @@ FIELD_HEIGHT = 0
 SCREEN_HEIGHT = 0
 
 def get_size(width, height, screen_height):
-    global FIELD_WIDTH, FIELD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT
+    global FIELD_WIDTH, FIELD_HEIGHT, SCREEN_HEIGHT
     FIELD_WIDTH = width - 20
     FIELD_HEIGHT = height
     SCREEN_HEIGHT = screen_height
@@ -35,17 +35,22 @@ class Block:
         surface.blit(self.image, self.rect.topleft)
 
     def apply_effect(self, ball, blocks):
-        if self.block_type == "horizontal-solid" or self.block_type == "vertical-solid":
-            ball.speed_x = -ball.speed_x
-            ball.speed_y = -ball.speed_y
-        if self.block_type == "horizontal-breakable" or self.block_type == "vertical-breakable":
-            ball.speed_x = -ball.speed_x
-            ball.speed_y = -ball.speed_y
+        if self.block_type in ["horizontal-solid", "vertical-solid"]:
+            ball.speed_x = -ball.speed_x * random.uniform(0.8, 1.2)
+            ball.speed_y = -ball.speed_y * random.uniform(0.8, 1.2)
+        if self.block_type in ["horizontal-breakable", "vertical-breakable"]:
+            ball.speed_x = -ball.speed_x * random.uniform(0.8, 1.2)
+            ball.speed_y = -ball.speed_y * random.uniform(0.8, 1.2)
             blocks.remove(self)
-        if self.block_type == "horizontal-chaotic" or self.block_type == "vertical-chaotic":
-            random_speed = random.randint(105,120)/100
-            ball.speed_x = ball.speed_x * -random_speed
-            ball.speed_y = ball.speed_y * -random_speed
+        if self.block_type in ["horizontal-chaotic", "vertical-chaotic"]:
+
+            random_speed = random.uniform(0.9, 1.06)  # Variação maior para tornar mais caótico
+            random_direction_x = random.choice([-1, 1])  # Aleatoriamente inverte o eixo X
+            random_direction_y = random.choice([-1, 1])  # Aleatoriamente inverte o eixo Y
+
+            ball.speed_x = ball.speed_x * random_speed * random_direction_x
+            ball.speed_y = ball.speed_y * random_speed * random_direction_y
+
 
 def blocks_overlap(block1, block2):
     return block1.rect.colliderect(block2.rect)
