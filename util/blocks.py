@@ -31,6 +31,9 @@ class Block:
         self.rect = self.image.get_rect(topleft = (x, y))
         self.block_type = block_type
 
+    def move(y):
+        while :
+
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
 
