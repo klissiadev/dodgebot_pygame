@@ -1,4 +1,5 @@
 import pygame
+import random
 from util import players as pl
 from util import blocks as bc
 
@@ -50,6 +51,15 @@ class Ball:
         self.speed_y = 2
         self.in_move = False
         self.friction = 0.99
+    
+    def random_spawn(self, blocks):
+        self.x += random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
+        self.y += random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
+        self.rect.topleft = (self.x , self.y)
+        while (self.check_collision(blocks)):
+            self.spawn_x = random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
+            self.spawn_y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
+            self.rect.topleft = (self.spawn_x , self.spawn_y)
 
     def move(self):
         self.x += self.speed_x
@@ -76,6 +86,7 @@ class Ball:
         for block in blocks:
             if self.rect.colliderect(block.rect):
                 block.apply_effect(self,blocks)
+                return True
 
 # Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
 player1_controls = {
