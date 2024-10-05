@@ -34,10 +34,11 @@ def draw_lives_player_1(width, lives):
         screw_y = 10
         screen.blit(screw_img, (screw_x, screw_y))
 
-
+# ball size
 BALL_WIDTH = 25
 BALL_HEIGHT = 25
 BALL_RADIUS = BALL_WIDTH / 2
+
 
 class Ball:
     def __init__(self, x, y):
@@ -121,6 +122,10 @@ player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, 
 running = True
 ball = Ball(480, 325)
 blocks = bc.create_blocks()
+
+# play music
+dodging_theme = pygame.mixer.Sound('F:/dodgebot_pygame/assets/DODGING!.mp3')
+dodging_theme.play(-1)
 
 while running:
     screen.fill(COLOR_BLACK)

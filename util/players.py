@@ -38,6 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.controls = controls  # Set controls
         self.holding_ball = False
         self.defending = False
+        self.DEFENSE_DISTANCE = 50
 
     def move(self, keys, blocks, ball):
         dx, dy = 0, 0
@@ -59,7 +60,6 @@ class Player(pygame.sprite.Sprite):
             self.x -= dx
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
-        self.rect.topleft = (self.x, self.y)
 
         if self.rect.left < BORDER_THICKNESS:
             self.rect.left = BORDER_THICKNESS + 5
@@ -77,6 +77,55 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(block.rect):
                 return True
         return False
+
+    def check_defense(self, ball):
+        defense_buffer = 10
+        defense_width = 20
+        defense_height = 30
+
+        distance_x = abs(self.rect.centerx - ball.rect.centerx)
+        distance_y = abs(self.rect.centery - ball.rect.centery)
+
+        if distance_x > self.DEFENSE_DISTANCE or distance_y > self.DEFENSE_DISTANCE:
+            return
+
+        self.defense1 = pygame.Rect(
+            self.rect.right - defense_buffer, self.rect.centery - defense_height // 2,
+            defense_width, defense_height)
+
+        self.defense2 = pygame.Rect(
+            self.rect.left + defense_buffer, self.rect.centery - defense_height // 2,
+            defense_width, defense_height)
+
+        self.defense_up = pygame.Rect(
+            self.rect.centerx - defense_width // 2,
+            self.rect.top - defense_height - defense_buffer,
+            defense_width,
+            defense_height
+        )
+
+        self.defense_down = pygame.Rect(
+            self.rect.centerx - defense_width // 2,
+            self.rect.bottom + defense_buffer,
+            defense_width,
+            defense_height
+        )
+
+        if ball.rect.colliderect(self.defense1):
+            ball.speed_x = 5
+            return
+
+        if ball.rect.colliderect(self.defense2):
+            ball.speed_x = -5
+            return
+
+        if ball.rect.colliderect(self.defense_up):
+            ball.speed_x = -5
+            return
+
+        if ball.rect.colliderect(self.defense_down):
+            ball.speed_x = -5
+            return
 
     def check_holdingball(self, ball):
         if self.rect.colliderect(ball.rect) and not ball.in_move:
@@ -108,9 +157,19 @@ class Player(pygame.sprite.Sprite):
                 self.define_ball_position(ball)
                 ball.in_move = True
                 self.holding_ball = False
-            else:
+            if not self.holding_ball:
                 self.image = self.images['defense']
                 self.flip_image()
+                self.check_defense(ball)
+        else:
+                if self.orientation == "Left":
+                    self.image = self.images['normal_left']
+                elif self.orientation == "Right":
+                    self.image = self.images['normal_right']
+                elif self.orientation == "Up":
+                    self.image = self.images['normal']
+                elif self.orientation == "Down":
+                    self.image = self.images['normal_down']
 
 
     def define_ball_position(self, ball):
