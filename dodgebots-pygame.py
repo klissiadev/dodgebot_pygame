@@ -67,8 +67,10 @@ class Ball:
         self.rect.topleft = (self.x, self.y)
         if self.rect.left <= BORDER_THICKNESS or self.rect.right >= FIELD_WIDTH:
             self.speed_x *= -1
+            block_sound.play()
         if self.rect.top <= 80 or self.rect.bottom >= 80 + FIELD_HEIGHT:
             self.speed_y *= -1
+            block_sound.play()
 
         self.speed_x *= self.friction
         self.speed_y *= self.friction
@@ -86,6 +88,7 @@ class Ball:
         for block in blocks:
             if self.rect.colliderect(block.rect):
                 block.apply_effect(self,blocks)
+                block_sound.play()
                 return True
 
 # Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
@@ -137,6 +140,8 @@ blocks = bc.create_blocks()
 # play music
 dodging_theme = pygame.mixer.Sound('./assets/DODGING!.mp3')
 dodging_theme.play(-1)
+block_sound = pygame.mixer.Sound('./assets/block_sound.mp3')
+
 
 while running:
     screen.fill(COLOR_BLACK)

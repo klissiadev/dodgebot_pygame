@@ -1,5 +1,8 @@
 import pygame
 
+pygame.init()
+pygame.mixer.init()
+
 BORDER_THICKNESS = 0
 FIELD_WIDTH = 0
 FIELD_HEIGHT = 0
@@ -7,6 +10,10 @@ BALL_WIDTH = 0
 BALL_HEIGHT = 0
 BALL_RADIUS = 0
 angle = 0
+
+# players sounds
+reflect_sound = pygame.mixer.Sound('./assets/reflect_sound.mp3')
+throw_sound = pygame.mixer.Sound('./assets/throw_sound.mp3')
 
 def get_global_variables(border,field_w,field_h, ball_w, ball_y,ball_rad):
     global BORDER_THICKNESS, FIELD_WIDTH, FIELD_HEIGHT, BALL_WIDTH, BALL_HEIGHT, BALL_RADIUS
@@ -87,7 +94,7 @@ class Player(pygame.sprite.Sprite):
         distance_y = abs(self.rect.centery - ball.rect.centery)
 
         if distance_x > self.DEFENSE_DISTANCE or distance_y > self.DEFENSE_DISTANCE:
-            return
+            reflect_sound.play()
 
         self.defense1 = pygame.Rect(
             self.rect.right - defense_buffer, self.rect.centery - defense_height // 2,
@@ -133,6 +140,7 @@ class Player(pygame.sprite.Sprite):
             self.holding_ball = True  # O jogador está segurando a bola
 
             # Resetar as velocidades da bola para que o jogador possa lançar novamente
+            throw_sound.play()
             ball.speed_x = 2  # Ou outro valor inicial padrão
             ball.speed_y = 2
 
