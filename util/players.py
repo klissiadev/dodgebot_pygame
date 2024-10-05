@@ -40,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.defending = False
         self.DEFENSE_DISTANCE = 50
 
-    def move(self, keys, blocks, ball):
+    def move(self, keys, blocks, ball, adversary):
         dx, dy = 0, 0
 
         if keys[self.controls['left']]:
@@ -70,7 +70,7 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > 80 + FIELD_HEIGHT:
             self.rect.bottom = 70 + FIELD_HEIGHT
 
-        self.check_holdingball(ball)
+        self.check_holdingball(ball,adversary)
 
     def check_collision(self, blocks):
         for block in blocks:
@@ -127,9 +127,9 @@ class Player(pygame.sprite.Sprite):
             ball.speed_x = -5
             return
 
-    def check_holdingball(self, ball):
-        if self.rect.colliderect(ball.rect) and not ball.in_move:
-            ball.rect.topleft = (self.x, self.rect.y)  # Mantém a bola com o jogador
+    def check_holdingball(self, ball, adversary):
+        if self.rect.colliderect(
+                ball.rect) and not ball.in_move and not self.holding_ball and not adversary.holding_ball:
             self.holding_ball = True  # O jogador está segurando a bola
 
             # Resetar as velocidades da bola para que o jogador possa lançar novamente
@@ -152,6 +152,7 @@ class Player(pygame.sprite.Sprite):
         if self.holding_ball:
             self.image = self.images['throwing']
             self.flip_image()
+            ball.rect.topleft = (self.x, self.rect.y)
         if keys[self.controls['defend_or_throw']]:
             if not ball.in_move and self.holding_ball:
                 self.define_ball_position(ball)

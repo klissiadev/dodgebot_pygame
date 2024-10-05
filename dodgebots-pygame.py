@@ -124,7 +124,7 @@ ball = Ball(480, 325)
 blocks = bc.create_blocks()
 
 # play music
-dodging_theme = pygame.mixer.Sound('F:/dodgebot_pygame/assets/DODGING!.mp3')
+dodging_theme = pygame.mixer.Sound('./assets/DODGING!.mp3')
 dodging_theme.play(-1)
 
 while running:
@@ -137,8 +137,8 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    player1.move(keys, blocks, ball)
-    player2.move(keys, blocks, ball)
+    player1.move(keys, blocks, ball, player2)
+    player2.move(keys, blocks, ball, player1)
 
     if ball.in_move:
         ball.move()
