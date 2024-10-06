@@ -29,7 +29,7 @@ screw_img = pygame.image.load(".//assets/screw.png")
 screw_img = pygame.transform.scale(screw_img, (50, 50))
 
 
-def draw_lives_player_1(width, lives):
+def draw_lives_player(width, lives):
     for column in range(lives):
         screw_x = width + column * (60)
         screw_y = 10
@@ -51,7 +51,7 @@ class Ball:
         self.speed_y = 2
         self.in_move = False
         self.friction = 0.99
-    
+
     def random_spawn(self, blocks):
         self.x += random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
         self.y += random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
@@ -92,6 +92,8 @@ class Ball:
                 return True
 
     def hit_player(self, player):
+        if player.holding_ball and (self.speed_x > 0 and self.speed_y > 0):
+            return False
         if abs(self.speed_x) > 0 and abs(self.speed_y) > 0:
             if self.rect.colliderect(player.rect):
                 return True
@@ -137,6 +139,11 @@ pl.get_global_variables(BORDER_THICKNESS, FIELD_WIDTH, FIELD_HEIGHT, BALL_WIDTH,
 # Create the two players
 player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
 player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
+
+# PLayers hit controller
+player1_hit = False
+player2_hit = False
+
 
 # loop
 interval = True
@@ -187,18 +194,18 @@ while running:
         if player1.x == ball.rect.left and player1.y == ball.rect.top:
             player1.image = player1.images['throwing']
 
-    # Loosing life check
-    if ball.hit_player(player1) and not player1.holding_ball:
+    if ball.hit_player(player1) and not player1.holding_ball and not player1_hit:
         player1.life -= 1
-        ball.speed_x *= 1
-        ball.speed_y *= 1
-        block_sound.play()
+        player1_hit = True
 
-    if ball.hit_player(player2) and not player2.holding_ball:
+
+    if ball.hit_player(player2) and not player2.holding_ball and not player2_hit:
         player2.life -= 1
-        ball.speed_x *= 1
-        ball.speed_y *= 1
-        block_sound.play()
+        player2_hit = True
+
+    if not ball.in_move:
+        player1_hit = False
+        player2_hit = False
 
 
     if player1.life <= 0 or player2.life <= 0:
@@ -208,8 +215,8 @@ while running:
     # Draw field
     pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
     pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
-    draw_lives_player_1(40, 3)
-    draw_lives_player_1(SCREEN_WIDTH - 210, 3)
+    draw_lives_player(40, player1.life)
+    draw_lives_player(SCREEN_WIDTH - 210, player2.life)
 
     # Draw players, blocks, and ball
     player1.draw(screen)
