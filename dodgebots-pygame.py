@@ -144,6 +144,10 @@ player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, 
 player1_hit = False
 player2_hit = False
 
+# count of player hits
+player1_hits = 0
+player2_hits = 0
+
 
 # loop
 interval = True
@@ -194,14 +198,21 @@ while running:
         if player1.x == ball.rect.left and player1.y == ball.rect.top:
             player1.image = player1.images['throwing']
 
+    # checks if player 1 was hit
     if ball.hit_player(player1) and not player1.holding_ball and not player1_hit:
-        player1.life -= 1
+        player1_hits += 1
         player1_hit = True
+        if player1_hits >= 3:
+            player1.life -= 1
+            player1_hits = 0
 
-
-    if ball.hit_player(player2) and not player2.holding_ball and not player2_hit:
-        player2.life -= 1
+        # checks if player 2 was hit
+    if ball.hit_player(player2) and not player2.holding_ball and not player2_hit:  #
+        player2_hits += 1
         player2_hit = True
+        if player2_hits >= 3:
+            player2.life -= 1
+            player2_hits = 0
 
     if not ball.in_move:
         player1_hit = False
