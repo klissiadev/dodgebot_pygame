@@ -46,6 +46,7 @@ class Player(pygame.sprite.Sprite):
         self.holding_ball = False
         self.defending = False
         self.DEFENSE_DISTANCE = 50
+        self.life = 3
 
     def move(self, keys, blocks, ball, adversary):
         dx, dy = 0, 0
@@ -119,25 +120,35 @@ class Player(pygame.sprite.Sprite):
         )
 
         if ball.rect.colliderect(self.defense1):
-            ball.speed_x = 5
+            ball.speed_x = -5
+        else:
+            ball.speed_x *= 1
             return
 
         if ball.rect.colliderect(self.defense2):
             ball.speed_x = -5
+        else:
+            ball.speed_x *= 1
             return
 
         if ball.rect.colliderect(self.defense_up):
             ball.speed_x = -5
+        else:
+            ball.speed_x *= 1
             return
 
         if ball.rect.colliderect(self.defense_down):
             ball.speed_x = -5
+        else:
+            ball.speed_x *= 1
             return
 
     def check_holdingball(self, ball, adversary):
-        if self.rect.colliderect(
+        expanded_rect = self.rect.inflate(20, 20)  # Aumenta a hitbox em 20 pixels em largura e altura
+
+        if expanded_rect.colliderect(
                 ball.rect) and not ball.in_move and not self.holding_ball and not adversary.holding_ball:
-            self.holding_ball = True  # O jogador está segurando a bola
+            self.holding_ball = True    # O jogador está segurando a bola
 
             # Resetar as velocidades da bola para que o jogador possa lançar novamente
             throw_sound.play()

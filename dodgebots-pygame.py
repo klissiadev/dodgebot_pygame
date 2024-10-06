@@ -91,7 +91,13 @@ class Ball:
                 block_sound.play()
                 return True
 
-# Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
+    def hit_player(self, player):
+        if abs(self.speed_x) > 0 and abs(self.speed_y) > 0:
+            if self.rect.colliderect(player.rect):
+                return True
+        return False
+
+    # Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
 player1_controls = {
     'up': pygame.K_w,
     'down': pygame.K_s,
@@ -133,6 +139,7 @@ player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
 player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
 
 # loop
+interval = True
 running = True
 ball = Ball(480, 325)
 blocks = bc.create_blocks()
@@ -141,6 +148,7 @@ blocks = bc.create_blocks()
 dodging_theme = pygame.mixer.Sound('./assets/DODGING!.mp3')
 dodging_theme.play(-1)
 block_sound = pygame.mixer.Sound('./assets/block_sound.mp3')
+font = pygame.font.Font(None, 74)
 
 
 while running:
@@ -151,7 +159,18 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == pygame.K_e or event.type == pygame.K_SPACE:
+            interval = False
+
     keys = pygame.key.get_pressed()
+
+    if interval:
+        message_surface = font.render("STANDBY!", True, COLOR_WHITE)
+        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+        screen.blit(message_surface, message_rect)
+    else:
+        player1.move(keys, blocks, ball, player2)
+        player2.move(keys, blocks, ball, player1)
 
     player1.move(keys, blocks, ball, player2)
     player2.move(keys, blocks, ball, player1)
@@ -162,10 +181,29 @@ while running:
 
     player1.update_animation(keys,ball)
     player2.update_animation(keys,ball)
+
     # Catching the ball when speed equals to zero
     if ball.speed_x == 0 and ball.speed_y == 0:
         if player1.x == ball.rect.left and player1.y == ball.rect.top:
             player1.image = player1.images['throwing']
+
+    # Loosing life check
+    if ball.hit_player(player1) and not player1.holding_ball:
+        player1.life -= 1
+        ball.speed_x *= 1
+        ball.speed_y *= 1
+        block_sound.play()
+
+    if ball.hit_player(player2) and not player2.holding_ball:
+        player2.life -= 1
+        ball.speed_x *= 1
+        ball.speed_y *= 1
+        block_sound.play()
+
+
+    if player1.life <= 0 or player2.life <= 0:
+        interval = True
+
 
     # Draw field
     pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
