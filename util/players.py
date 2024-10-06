@@ -47,6 +47,8 @@ class Player(pygame.sprite.Sprite):
         self.defending = False
         self.DEFENSE_DISTANCE = 50
         self.life = 3
+        self.throw_state = False
+        self.catch = False
 
     def move(self, keys, blocks, ball, adversary):
         dx, dy = 0, 0
@@ -139,6 +141,7 @@ class Player(pygame.sprite.Sprite):
         if self.rect.colliderect(
                 ball.rect) and not ball.in_move and not self.holding_ball and not adversary.holding_ball:
             self.holding_ball = True  # O jogador está segurando a bola
+            self.catch = True
 
             # Resetar as velocidades da bola para que o jogador possa lançar novamente
             throw_sound.play()
@@ -173,10 +176,15 @@ class Player(pygame.sprite.Sprite):
         if keys[self.controls['defend_or_throw']]:
             if not ball.in_move and self.holding_ball:
                 self.define_ball_position(ball)
+                self.catch = True
                 ball.in_move = True
                 self.holding_ball = False
                 self.image = self.images['throwing']
+                self.throw_state = True
+                throw_sound.play()
         else:
+                self.throw_state = False
+                self.catch = False
                 if self.orientation == "Left":
                     self.image = self.images['normal_left']
                 elif self.orientation == "Right":

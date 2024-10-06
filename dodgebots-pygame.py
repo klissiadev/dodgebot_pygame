@@ -199,20 +199,24 @@ while running:
             player1.image = player1.images['throwing']
 
     # checks if player 1 was hit
-    if ball.hit_player(player1) and not player1.holding_ball and not player1_hit:
-        player1_hits += 1
-        player1_hit = True
-        if player1_hits >= 3:
-            player1.life -= 1
-            player1_hits = 0
+    if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
+        if player1.throw_state is False and not player2.holding_ball:
+            player1_hits += 1
+            player1_hit = True
+            if player1_hits >= 3:
+                player1.life -= 1
+                player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
+                player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
 
         # checks if player 2 was hit
-    if ball.hit_player(player2) and not player2.holding_ball and not player2_hit:  #
-        player2_hits += 1
-        player2_hit = True
-        if player2_hits >= 3:
-            player2.life -= 1
-            player2_hits = 0
+    if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
+        if player2.throw_state is False and not player1.holding_ball:
+            player2_hits += 1
+            player2_hit = True
+            if player2_hits >= 3:
+                player2.life -= 1
+                player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
+                player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
 
     if not ball.in_move:
         player1_hit = False
