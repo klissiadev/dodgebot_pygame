@@ -82,6 +82,16 @@ class Player(pygame.sprite.Sprite):
 
         self.check_holdingball(ball,adversary)
 
+    def start_position(self, state):
+        if state is True:
+            self.x = 60
+            self.y = FIELD_HEIGHT / 2 + 30
+            return self.x, self.y
+        if state is False:
+            self.x = FIELD_WIDTH - 120
+            self.y = FIELD_HEIGHT / 2 + 30
+            return self.x, self.y
+
     def check_collision(self, blocks):
         for block in blocks:
             if self.rect.colliderect(block.rect):

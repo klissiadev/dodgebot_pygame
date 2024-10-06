@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 from util import players as pl
 from util import blocks as bc
 
@@ -53,13 +54,14 @@ class Ball:
         self.friction = 0.99
 
     def random_spawn(self, blocks):
-        self.x += random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
-        self.y += random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
-        self.rect.topleft = (self.x , self.y)
-        while (self.check_collision(blocks)):
-            self.spawn_x = random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
-            self.spawn_y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
-            self.rect.topleft = (self.spawn_x , self.spawn_y)
+        while True:
+            self.x = random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
+            self.y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
+            self.rect.topleft = (self.x, self.y)
+            if not self.check_collision(blocks):
+                break  # Sai do loop se não houver colisão
+
+        return True
 
     def move(self):
         self.x += self.speed_x
@@ -152,6 +154,8 @@ player2_hits = 0
 # loop
 interval = True
 running = True
+pause_time = 0
+is_paused = False
 ball = Ball(480, 325)
 blocks = bc.create_blocks()
 
@@ -170,8 +174,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        if event.type == pygame.K_e or event.type == pygame.K_SPACE:
-            interval = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE or event.key == pygame.K_e:
+                interval = False
 
     keys = pygame.key.get_pressed()
 
@@ -180,51 +185,68 @@ while running:
         message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
         screen.blit(message_surface, message_rect)
     else:
-        player1.move(keys, blocks, ball, player2)
-        player2.move(keys, blocks, ball, player1)
 
-    player1.move(keys, blocks, ball, player2)
-    player2.move(keys, blocks, ball, player1)
+        if is_paused:
+            message_surface = font.render("It´s a Hit!", True, COLOR_WHITE)
+            message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+            screen.blit(message_surface, message_rect)
 
-    if ball.in_move:
-        ball.move()
-        ball.check_collision(blocks)
+            # Verifique se os 2 segundos se passaram
+            if time.time() - pause_time >= 2:
+                is_paused = False
 
-    player1.update_animation(keys,ball)
-    player2.update_animation(keys,ball)
 
-    # Catching the ball when speed equals to zero
-    if ball.speed_x == 0 and ball.speed_y == 0:
-        if player1.x == ball.rect.left and player1.y == ball.rect.top:
-            player1.image = player1.images['throwing']
+        else:
+            player1.move(keys, blocks, ball, player2)
+            player2.move(keys, blocks, ball, player1)
 
-    # checks if player 1 was hit
-    if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
-        if player1.throw_state is False and not player2.holding_ball:
-            player1_hits += 1
-            player1_hit = True
-            if player1_hits >= 3:
-                player1.life -= 1
+            if ball.in_move:
+                ball.move()
+                ball.check_collision(blocks)
+
+            player1.update_animation(keys,ball)
+            player2.update_animation(keys,ball)
+
+            # Catching the ball when speed equals to zero
+            if ball.speed_x == 0 and ball.speed_y == 0:
+                if player1.x == ball.rect.left and player1.y == ball.rect.top:
+                    player1.image = player1.images['throwing']
+
+            # checks if player 1 was hit
+            if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
+                if player1.throw_state is False and not player2.holding_ball:
+                    player1_hits += 1
+                    player1_hit = True
+                    if player1_hits >= 3:
+                        player1.life -= 1
+                        is_paused = True
+                        pause_time = time.time()
+                        player1.start_position(True)
+                        player2.start_position(False)
+                        ball.random_spawn(blocks)
+
+            # checks if player 2 was hit
+            if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
+                if player2.throw_state is False and not player1.holding_ball:
+                    player2_hits += 1
+                    player2_hit = True
+                    if player2_hits >= 3:
+                        player2.life -= 1
+                        is_paused = True
+                        pause_time = time.time()
+                        player1.start_position(True)
+                        player2.start_position(False)
+                        ball.random_spawn(blocks)
+
+            if not ball.in_move:
+                player1_hit = False
+                player2_hit = False
+
+
+            if player1.life <= 0 or player2.life <= 0:
+                interval = True
                 player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
                 player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
-
-        # checks if player 2 was hit
-    if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
-        if player2.throw_state is False and not player1.holding_ball:
-            player2_hits += 1
-            player2_hit = True
-            if player2_hits >= 3:
-                player2.life -= 1
-                player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
-                player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
-
-    if not ball.in_move:
-        player1_hit = False
-        player2_hit = False
-
-
-    if player1.life <= 0 or player2.life <= 0:
-        interval = True
 
 
     # Draw field
