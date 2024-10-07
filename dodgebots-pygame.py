@@ -18,6 +18,13 @@ FPS = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Dodgebot - PyGame Edition - 2024-09-30")
 
+home_screen = pygame.transform.scale(pygame.image.load("./assets/home.png").convert_alpha(), (750, 460))
+start_font = pygame.font.Font('assets/PressStart2P.ttf', 18)
+start_text = start_font.render("Press ENTER to start the game", True, COLOR_WHITE)
+start_text_rect = start_text.get_rect()
+start_text_rect.center = (500, 530)
+on_text = 0
+
 # Playing field
 FIELD_WIDTH = SCREEN_WIDTH - 10
 FIELD_HEIGHT = 515
@@ -162,7 +169,8 @@ player2_hits = 0
 
 
 # loop
-interval = True
+start = True
+interval = False
 running = True
 pause_time = 0
 is_paused = False
@@ -183,102 +191,116 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE or event.key == pygame.K_e:
+            if event.key == pygame.K_RETURN:
+                start = False
+                interval = True
+            if (event.key == pygame.K_SPACE or event.key == pygame.K_e) and interval:
                 interval = False
 
     keys = pygame.key.get_pressed()
 
-    if interval:
-        message_surface = font.render("STANDBY!", True, COLOR_WHITE)
-        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
-        screen.blit(message_surface, message_rect)
+    if start:
+        screen.fill(COLOR_BLACK)
+        screen.blit(home_screen, (150, 20))
+        # flashing TEXT
+        if on_text < 240:
+            screen.blit(start_text, start_text_rect)
+            on_text += 1
+        elif on_text < 400:
+            on_text += 1
+        else:
+            on_text = 0
     else:
-
-        if is_paused:
-            message_surface = font.render("It´s a Hit!", True, COLOR_WHITE)
+        if interval:
+            message_surface = font.render("STANDBY!", True, COLOR_WHITE)
             message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
             screen.blit(message_surface, message_rect)
-
-            # Verifique se os 2 segundos se passaram
-            if time.time() - pause_time >= 2:
-                is_paused = False
-
-
         else:
-            player1.move(keys, blocks, ball, player2)
-            player2.move(keys, blocks, ball, player1)
 
-            if ball.in_move:
-                ball.move()
-                ball.check_collision(blocks)
+            if is_paused:
+                message_surface = font.render("It´s a Hit!", True, COLOR_WHITE)
+                message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+                screen.blit(message_surface, message_rect)
 
-            player1.update_animation(keys,ball)
-            player2.update_animation(keys,ball)
-
-            # Catching the ball when speed equals to zero
-            if ball.speed_x == 0 and ball.speed_y == 0:
-                if player1.x == ball.rect.left and player1.y == ball.rect.top:
-                    player1.image = player1.images['throwing']
-
-            # checks if player 1 was hit
-            if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
-                if player1.throw_state is False and not player2.holding_ball:
-                    player1_hits += 1
-                    player1_hit = True
-                    if player1_hits >= 3:
-                        player1.life -= 1
-                        is_paused = True
-                        pause_time = time.time()
-                        player1.start_position(True)
-                        player2.start_position(False)
-                        ball.random_spawn(blocks)
-
-            # checks if player 2 was hit
-            if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
-                if player2.throw_state is False and not player1.holding_ball:
-                    player2_hits += 1
-                    player2_hit = True
-                    if player2_hits >= 3:
-                        player2.life -= 1
-                        is_paused = True
-                        pause_time = time.time()
-                        player1.start_position(True)
-                        player2.start_position(False)
-                        ball.random_spawn(blocks)
-
-            if not ball.in_move:
-                player1_hit = False
-                player2_hit = False
-
-            for block in blocks:
-                if block.block_type == "vertical-chaotic":
-                    block.chaotic_move()
-
-            if player1.life <= 0 or player2.life <= 0:
-                interval = True
-                player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
-                player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
+                # Verifique se os 2 segundos se passaram
+                if time.time() - pause_time >= 2:
+                    is_paused = False
 
 
+            else:
+                player1.move(keys, blocks, ball, player2)
+                player2.move(keys, blocks, ball, player1)
 
-    # Draw field
-    pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
-    pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
-    draw_lives_player(40, player1.life)
-    draw_lives_player(SCREEN_WIDTH - 210, player2.life)
+                if ball.in_move:
+                    ball.move()
+                    ball.check_collision(blocks)
 
-    # Draw players, blocks, and ball
-    player1.draw(screen)
-    player2.draw(screen)
-    ball.draw(screen)
+                player1.update_animation(keys,ball)
+                player2.update_animation(keys,ball)
 
-    for block in blocks:
-        block.draw(screen)
+                # Catching the ball when speed equals to zero
+                if ball.speed_x == 0 and ball.speed_y == 0:
+                    if player1.x == ball.rect.left and player1.y == ball.rect.top:
+                        player1.image = player1.images['throwing']
+
+                # checks if player 1 was hit
+                if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
+                    if player1.throw_state is False and not player2.holding_ball:
+                        player1_hits += 1
+                        player1_hit = True
+                        if player1_hits >= 3:
+                            player1.life -= 1
+                            is_paused = True
+                            pause_time = time.time()
+                            player1.start_position(True)
+                            player2.start_position(False)
+                            ball.random_spawn(blocks)
+
+                # checks if player 2 was hit
+                if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
+                    if player2.throw_state is False and not player1.holding_ball:
+                        player2_hits += 1
+                        player2_hit = True
+                        if player2_hits >= 3:
+                            player2.life -= 1
+                            is_paused = True
+                            pause_time = time.time()
+                            player1.start_position(True)
+                            player2.start_position(False)
+                            ball.random_spawn(blocks)
+
+                if not ball.in_move:
+                    player1_hit = False
+                    player2_hit = False
+
+                for block in blocks:
+                    if block.block_type == "vertical-chaotic":
+                        block.chaotic_move()
+
+                if player1.life <= 0 or player2.life <= 0:
+                    interval = True
+                    player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
+                    player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
 
 
-    # update screen
+
+        # Draw field
+        pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
+        pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
+        draw_lives_player(40, player1.life)
+        draw_lives_player(SCREEN_WIDTH - 210, player2.life)
+
+        # Draw players, blocks, and ball
+        player1.draw(screen)
+        player2.draw(screen)
+        ball.draw(screen)
+
+        for block in blocks:
+            block.draw(screen)
+
+
+        # update screen
     pygame.display.flip()
 
 pygame.quit()
