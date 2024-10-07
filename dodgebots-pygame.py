@@ -43,6 +43,34 @@ def draw_lives_player(width, lives):
         screw_y = 10
         screen.blit(screw_img, (screw_x, screw_y))
 
+
+def reset_game():
+    global player1_hits, player2_hits, player1_hit, player2_hit
+    global winner, announcement_played, show_victory_screen, interval
+    global ball, blocks
+
+    player1_hits = 0
+    player2_hits = 0
+    player1_hit = False
+    player2_hit = False
+    winner = None
+    announcement_played = False
+    show_victory_screen = False
+    interval = False
+
+    # Reset players
+    player1.life = 3
+    player1.start_position(True)
+
+    player2.life = 3
+    player2.start_position(False)
+
+    # Reset ball
+    ball = Ball(480, 325)
+
+    # Reset blocks
+    blocks = bc.create_blocks()
+
 # ball size
 BALL_WIDTH = 25
 BALL_HEIGHT = 25
@@ -66,7 +94,7 @@ class Ball:
             self.y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
             self.rect.topleft = (self.x, self.y)
             if not self.check_collision(blocks):
-                break  # Sai do loop se não houver colisão
+                break
 
         return True
 
@@ -111,12 +139,9 @@ class Ball:
                 return True
 
     def hit_player(self, player):
-        if player.holding_ball and (self.speed_x > 0 and self.speed_y > 0):
+        if player.holding_ball:
             return False
-        if abs(self.speed_x) > 0 and abs(self.speed_y) > 0:
-            if self.rect.colliderect(player.rect):
-                return True
-        return False
+        return self.rect.colliderect(player.rect)
 
     # Controls for Player 1 (WASD + E for defense/attack) and player 2 (Arrow keys + Space for defense/attack)
 player1_controls = {
@@ -155,9 +180,18 @@ player2_image = {
 
 pl.get_global_variables(BORDER_THICKNESS, FIELD_WIDTH, FIELD_HEIGHT, BALL_WIDTH, BALL_HEIGHT, BALL_RADIUS)
 
+# old games font
+font_path = './assets/game_font/8-bit-hud.ttf'
+font_size = 18
+game_font = pygame.font.Font(font_path, font_size)
+
 # Create the two players
 player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
 player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
+
+# Victory sprites
+vic1_sprite = './assets/B01.png'
+vic2_sprite = './assets/B02.png'
 
 # PLayers hit controller
 player1_hit = False
@@ -170,17 +204,38 @@ player2_hits = 0
 
 # loop
 start = True
+winner = None
 interval = False
+winner_podium = False
 running = True
 pause_time = 0
 is_paused = False
+show_victory_screen = False
 ball = Ball(480, 325)
 blocks = bc.create_blocks()
+
+# tense pause
+announce_pause = 6
+announce_time = time.time()
 
 # play music
 dodging_theme = pygame.mixer.Sound('./assets/DODGING!.mp3')
 dodging_theme.play(-1)
 block_sound = pygame.mixer.Sound('./assets/block_sound.mp3')
+crash_sound = pygame.mixer.Sound('./assets/crash.mp3')
+clean_sound = pygame.mixer.Sound('./assets/narrator/clean.mp3')
+beauty_sound = pygame.mixer.Sound('./assets/narrator/beautifaul.mp3')
+slam_sound = pygame.mixer.Sound('./assets/narrator/slam.mp3')
+that_hit_sound = pygame.mixer.Sound('./assets/narrator/thats a hit.mp3')
+announcement_sound = pygame.mixer.Sound('./assets/narrator/who_winner.mp3')
+p1_wins_sound = pygame.mixer.Sound('./assets/narrator/p1_victory.mp3')
+p2_wins_sound = pygame.mixer.Sound('./assets/narrator/p2_victory.mp3')
+
+# Narrator random speechs
+reaction = [clean_sound, beauty_sound, slam_sound, that_hit_sound]
+announcement_time = 0
+announcement_played = False
+
 font = pygame.font.Font(None, 74)
 
 
@@ -212,20 +267,28 @@ while running:
         else:
             on_text = 0
     else:
-        if interval:
-            message_surface = font.render("STANDBY!", True, COLOR_WHITE)
+        if interval and announcement_played is True:
+            message_surface = game_font.render("Ok, that's enough!", True, COLOR_WHITE)
+            message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+            screen.blit(message_surface, message_rect)
+
+        if interval and announcement_played is False:
+            message_surface = game_font.render("STANDBY!", True, COLOR_WHITE)
             message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
             screen.blit(message_surface, message_rect)
         else:
 
-            if is_paused:
-                message_surface = font.render("It´s a Hit!", True, COLOR_WHITE)
+            if is_paused and announcement_played is False:
+                message_surface = game_font.render("It´s a Hit!", True, COLOR_WHITE)
                 message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
                 screen.blit(message_surface, message_rect)
 
                 # Verifique se os 2 segundos se passaram
                 if time.time() - pause_time >= 2:
                     is_paused = False
+                    react = random.choice(reaction)
+                    if player1.life >= 1 or player2.life >= 1:
+                        react.play()
 
 
             else:
@@ -279,13 +342,64 @@ while running:
                         block.chaotic_move()
 
                 if player1.life <= 0 or player2.life <= 0:
-                    interval = True
-                    player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
-                    player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
+                    if not announcement_played:
+                        if player1.life <= 0:
+                            winner = 'player2'
+                        if player2.life <= 0:
+                            winner = 'player1'
+                        announcement_time = time.time()
+                        dodging_theme.stop()
+                        announcement_sound.play()
+                        announcement_played = True
+                        show_victory_screen = False
+                        interval = True
 
+                if announcement_played:
+                    if time.time() - announcement_time >= 6:
+                        show_victory_screen = True
 
+                if show_victory_screen and winner:
+                    screen.fill(COLOR_BLACK)
+                    if winner == 'player1':
+                        winner_image = pygame.image.load(vic1_sprite)
+                        p1_wins_sound.play()
+                        message_surface = game_font.render("Player 1 Wins", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+                        screen.blit(message_surface, message_rect)
 
-        # Draw field
+                        message_surface = game_font.render("Press 'enter' to restart", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 6))
+                        screen.blit(message_surface, message_rect)
+
+                    else:
+                        winner_image = pygame.image.load(vic2_sprite)
+                        p2_wins_sound.play()
+                        message_surface = game_font.render("Player 2 Wins!", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
+                        screen.blit(message_surface, message_rect)
+
+                        message_surface = game_font.render("Press 'enter' to restart", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 6))
+                        screen.blit(message_surface, message_rect)
+
+                    winner_image = pygame.transform.scale(winner_image, (200, 200))
+                    winner_rect = winner_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+                    screen.blit(winner_image, winner_rect)
+                    pygame.display.flip()
+                    time.sleep(5)
+                    waiting_for_restart = True
+                    while waiting_for_restart:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                running = False
+                                waiting_for_restart = False
+                            if event.type == pygame.KEYDOWN:
+                                dodging_theme.play(-1)
+                                if event.key == pygame.K_RETURN:
+                                    reset_game()
+                                    waiting_for_restart = False
+
+                                # Draw field
         pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
         pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
         draw_lives_player(40, player1.life)
