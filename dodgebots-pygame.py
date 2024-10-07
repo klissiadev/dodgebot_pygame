@@ -178,6 +178,13 @@ player2_image = {
     'defense': './assets/players/defense2.png'
 }
 
+credits = [
+    "Alexandre Elias\n"
+    "Ana Klissia\n",
+    "Arthur Marshall\n",
+    "João Guilherme"
+]
+
 pl.get_global_variables(BORDER_THICKNESS, FIELD_WIDTH, FIELD_HEIGHT, BALL_WIDTH, BALL_HEIGHT, BALL_RADIUS)
 
 # old games font
@@ -371,6 +378,16 @@ while running:
                         message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 6))
                         screen.blit(message_surface, message_rect)
 
+                        message_surface = game_font.render("CREDITS", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
+                        screen.blit(message_surface, message_rect)
+
+                        for index, nome in enumerate(credits):
+                            nome_surface = game_font.render(nome, True, COLOR_WHITE)
+                            nome_rect = nome_surface.get_rect(center=(
+                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            screen.blit(nome_surface, nome_rect)
+
                     else:
                         winner_image = pygame.image.load(vic2_sprite)
                         p2_wins_sound.play()
@@ -381,6 +398,16 @@ while running:
                         message_surface = game_font.render("Press 'enter' to restart", True, COLOR_WHITE)
                         message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 6))
                         screen.blit(message_surface, message_rect)
+
+                        message_surface = game_font.render("CREDITS", True, COLOR_WHITE)
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
+                        screen.blit(message_surface, message_rect)
+
+                        for index, nome in enumerate(credits):
+                            nome_surface = game_font.render(nome, True, COLOR_WHITE)
+                            nome_rect = nome_surface.get_rect(center=(
+                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            screen.blit(nome_surface, nome_rect)
 
                     winner_image = pygame.transform.scale(winner_image, (200, 200))
                     winner_rect = winner_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))

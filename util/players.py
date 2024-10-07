@@ -86,11 +86,13 @@ class Player(pygame.sprite.Sprite):
         if state is True:
             self.x = 60
             self.y = FIELD_HEIGHT / 2 + 30
-            return self.x, self.y
+            self.rect.topleft = (self.x, self.y)
+            self.image = self.images['normal_right']
         if state is False:
             self.x = FIELD_WIDTH - 120
             self.y = FIELD_HEIGHT / 2 + 30
-            return self.x, self.y
+            self.rect.topleft = (self.x, self.y)
+            self.image = self.images['normal_left']
 
     def check_collision(self, blocks):
         for block in blocks:
