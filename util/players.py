@@ -102,8 +102,8 @@ class Player(pygame.sprite.Sprite):
 
     def check_defense(self, ball):
         defense_buffer = 10
-        defense_width = 20
-        defense_height = 30
+        defense_width = 30
+        defense_height = 40
 
         distance_x = abs(self.rect.centerx - ball.rect.centerx)
         distance_y = abs(self.rect.centery - ball.rect.centery)

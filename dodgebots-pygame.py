@@ -94,6 +94,7 @@ class Ball:
             self.y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
             self.rect.topleft = (self.x, self.y)
             if not self.check_collision(blocks):
+                self.in_move = False
                 break
 
         return True
@@ -179,9 +180,9 @@ player2_image = {
 }
 
 credits = [
-    "Alexandre Elias\n"
-    "Ana Klissia\n",
-    "Arthur Marshall\n",
+    "Alexandre Elias \n"
+    "Ana Klissia \n",
+    "Arthur Marshall \n",
     "João Guilherme"
 ]
 
@@ -290,7 +291,6 @@ while running:
                 message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
                 screen.blit(message_surface, message_rect)
 
-                # Verifique se os 2 segundos se passaram
                 if time.time() - pause_time >= 2:
                     is_paused = False
                     react = random.choice(reaction)
@@ -319,7 +319,7 @@ while running:
                     if player1.throw_state is False and not player2.holding_ball:
                         player1_hits += 1
                         player1_hit = True
-                        if player1_hits >= 3:
+                        if player1_hits >= 1:
                             player1.life -= 1
                             is_paused = True
                             pause_time = time.time()
@@ -332,7 +332,7 @@ while running:
                     if player2.throw_state is False and not player1.holding_ball:
                         player2_hits += 1
                         player2_hit = True
-                        if player2_hits >= 3:
+                        if player2_hits >= 1:
                             player2.life -= 1
                             is_paused = True
                             pause_time = time.time()
@@ -385,7 +385,7 @@ while running:
                         for index, nome in enumerate(credits):
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
                             nome_rect = nome_surface.get_rect(center=(
-                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            SCREEN_WIDTH // 2, (SCREEN_HEIGHT // 4)*3 + index * 30))
                             screen.blit(nome_surface, nome_rect)
 
                     else:
@@ -400,13 +400,13 @@ while running:
                         screen.blit(message_surface, message_rect)
 
                         message_surface = game_font.render("CREDITS", True, COLOR_WHITE)
-                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3 ))
                         screen.blit(message_surface, message_rect)
 
                         for index, nome in enumerate(credits):
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
                             nome_rect = nome_surface.get_rect(center=(
-                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            SCREEN_WIDTH // 2, (SCREEN_HEIGHT // 4)*3 + index * 30))
                             screen.blit(nome_surface, nome_rect)
 
                     winner_image = pygame.transform.scale(winner_image, (200, 200))
