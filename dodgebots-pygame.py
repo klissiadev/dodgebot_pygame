@@ -67,6 +67,16 @@ class Ball:
         self.x += self.speed_x
         self.y += self.speed_y
         self.rect.topleft = (self.x, self.y)
+
+        if self.x + BALL_WIDTH < BORDER_THICKNESS or self.x > FIELD_WIDTH or self.y + BALL_HEIGHT < SCREEN_HEIGHT - FIELD_HEIGHT or self.y  > SCREEN_HEIGHT - BORDER_THICKNESS:
+            self.x = (FIELD_WIDTH - BALL_WIDTH) // 2
+            self.y = 80 + (FIELD_HEIGHT - BALL_HEIGHT) // 2
+            self.rect.topleft = (self.x, self.y)
+            self.speed_x = 2
+            self.speed_y = 2
+            self.in_move = False
+            return
+
         if self.rect.left <= BORDER_THICKNESS or self.rect.right >= FIELD_WIDTH:
             self.speed_x *= -1
             block_sound.play()
@@ -242,11 +252,15 @@ while running:
                 player1_hit = False
                 player2_hit = False
 
+            for block in blocks:
+                if block.block_type == "vertical-chaotic":
+                    block.chaotic_move()
 
             if player1.life <= 0 or player2.life <= 0:
                 interval = True
                 player1 = pl.Player(60, FIELD_HEIGHT / 2 + 30, player1_controls, player1_image)
                 player2 = pl.Player(FIELD_WIDTH - 120, FIELD_HEIGHT / 2 + 30, player2_controls, player2_image)
+
 
 
     # Draw field
@@ -262,6 +276,7 @@ while running:
 
     for block in blocks:
         block.draw(screen)
+
 
     # update screen
     pygame.display.flip()

@@ -30,6 +30,10 @@ class Block:
         self.image = block_images[block_type]
         self.rect = self.image.get_rect(topleft = (x, y))
         self.block_type = block_type
+        self.touch_top = True
+        self.touch_bottom = False
+        self.x = x
+        self.y = y
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
@@ -50,6 +54,19 @@ class Block:
 
             ball.speed_x = ball.speed_x * random_speed * random_direction_x
             ball.speed_y = ball.speed_y * random_speed * random_direction_y
+
+    def chaotic_move(self):
+        if self.touch_top:
+            self.y += 0.4
+            if self.y + 75 > SCREEN_HEIGHT:
+                self.touch_bottom = True
+                self.touch_top = False
+        if self.touch_bottom:
+            self.y -= 0.4
+            if self.y < SCREEN_HEIGHT - FIELD_HEIGHT:
+                self.touch_bottom = False
+                self.touch_top = True
+        self.rect.topleft = (self.x, self.y)
 
 
 def blocks_overlap(block1, block2):
