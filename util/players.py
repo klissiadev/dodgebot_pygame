@@ -108,7 +108,8 @@ class Player(pygame.sprite.Sprite):
         distance_x = abs(self.rect.centerx - ball.rect.centerx)
         distance_y = abs(self.rect.centery - ball.rect.centery)
 
-        if distance_x > self.DEFENSE_DISTANCE or distance_y > self.DEFENSE_DISTANCE:
+        if distance_x <= (self.DEFENSE_DISTANCE + defense_buffer) and distance_y <= (
+                self.DEFENSE_DISTANCE + defense_buffer):
             reflect_sound.play()
 
         self.defense1 = pygame.Rect(
@@ -157,8 +158,8 @@ class Player(pygame.sprite.Sprite):
 
             # Resetar as velocidades da bola para que o jogador possa lançar novamente
             throw_sound.play()
-            ball.speed_x = 2  # Ou outro valor inicial padrão
-            ball.speed_y = 2
+            ball.speed_x = 1.5
+            ball.speed_y = 1.5
 
     def update_animation(self,keys, ball):
         if keys[self.controls['left']]:

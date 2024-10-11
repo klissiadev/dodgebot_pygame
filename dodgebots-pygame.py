@@ -30,6 +30,9 @@ FIELD_WIDTH = SCREEN_WIDTH - 10
 FIELD_HEIGHT = 515
 BORDER_THICKNESS = 5
 
+# Arenas images
+factory_stage = pygame.image.load('./assets/arenas/Factory.png').convert()
+
 bc.get_size(FIELD_WIDTH, FIELD_HEIGHT, SCREEN_HEIGHT)
 
 # Screws // lives
@@ -80,6 +83,7 @@ BALL_RADIUS = BALL_WIDTH / 2
 class Ball:
     def __init__(self, x, y):
         self.image = pygame.transform.scale(pygame.image.load('.//assets/ball.png'), (BALL_WIDTH, BALL_HEIGHT))
+        self.safe_state = pygame.transform.scale(pygame.image.load('.//assets/safe ball.png'), (BALL_WIDTH, BALL_HEIGHT))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.x = x
         self.y = y
@@ -93,6 +97,8 @@ class Ball:
             self.x = random.randint(SCREEN_WIDTH - FIELD_WIDTH, SCREEN_WIDTH - BALL_WIDTH)
             self.y = random.randint(SCREEN_HEIGHT - FIELD_HEIGHT, SCREEN_HEIGHT - BALL_HEIGHT)
             self.rect.topleft = (self.x, self.y)
+            self.speed_x = 0
+            self.speed_y = 0
             if not self.check_collision(blocks):
                 break
 
@@ -130,6 +136,10 @@ class Ball:
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
+        if abs(self.speed_x) <= 0.5 and abs(self.speed_y) <= 0.5:
+            surface.blit(self.safe_state, self.rect.topleft)
+        else:
+            surface.blit(self.image, self.rect.topleft)
 
     def check_collision(self, blocks):
         for block in blocks:
@@ -139,6 +149,8 @@ class Ball:
                 return True
 
     def hit_player(self, player):
+        if self.speed_x <= 0.5 and self.speed_y <= 0.5:
+            return False
         if player.holding_ball:
             return False
         return self.rect.colliderect(player.rect)
@@ -310,16 +322,17 @@ while running:
                 player2.update_animation(keys,ball)
 
                 # Catching the ball when speed equals to zero
-                if ball.speed_x == 0 and ball.speed_y == 0:
+                if ball.speed_x <= 0.5 and ball.speed_y <= 0.5:
                     if player1.x == ball.rect.left and player1.y == ball.rect.top:
                         player1.image = player1.images['throwing']
 
                 # checks if player 1 was hit
                 if ball.hit_player(player1) is True and not player1.holding_ball and not player1_hit:
+                    crash_sound.play()
                     if player1.throw_state is False and not player2.holding_ball:
                         player1_hits += 1
                         player1_hit = True
-                        if player1_hits >= 3:
+                        if player1_hits <= 3:
                             player1.life -= 1
                             is_paused = True
                             pause_time = time.time()
@@ -329,10 +342,11 @@ while running:
 
                 # checks if player 2 was hit
                 if ball.hit_player(player2) is True and not player2.holding_ball and not player2_hit:
+                    crash_sound.play()
                     if player2.throw_state is False and not player1.holding_ball:
                         player2_hits += 1
                         player2_hit = True
-                        if player2_hits >= 3:
+                        if player2_hits <= 3:
                             player2.life -= 1
                             is_paused = True
                             pause_time = time.time()
@@ -385,7 +399,7 @@ while running:
                         for index, nome in enumerate(credits):
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
                             nome_rect = nome_surface.get_rect(center=(
-                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5 + index * 30))
                             screen.blit(nome_surface, nome_rect)
 
                     else:
@@ -406,7 +420,7 @@ while running:
                         for index, nome in enumerate(credits):
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
                             nome_rect = nome_surface.get_rect(center=(
-                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + index * 30))
+                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5 + index * 30))
                             screen.blit(nome_surface, nome_rect)
 
                     winner_image = pygame.transform.scale(winner_image, (200, 200))
@@ -427,7 +441,7 @@ while running:
                                     waiting_for_restart = False
 
                                 # Draw field
-        pygame.draw.rect(screen, COLOR_DARK_GRAY, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT))
+        screen.blit(factory_stage, (BORDER_THICKNESS, 80))
         pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
         draw_lives_player(40, player1.life)
         draw_lives_player(SCREEN_WIDTH - 210, player2.life)
