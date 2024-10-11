@@ -100,6 +100,7 @@ class Ball:
             self.speed_x = 0
             self.speed_y = 0
             if not self.check_collision(blocks):
+                self.in_move = False
                 break
 
         return True
@@ -191,9 +192,9 @@ player2_image = {
 }
 
 credits = [
-    "Alexandre Elias\n"
-    "Ana Klissia\n",
-    "Arthur Marshall\n",
+    "Alexandre Elias \n"
+    "Ana Klissia \n",
+    "Arthur Marshall \n",
     "João Guilherme"
 ]
 
@@ -302,7 +303,6 @@ while running:
                 message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 13))
                 screen.blit(message_surface, message_rect)
 
-                # Verifique se os 2 segundos se passaram
                 if time.time() - pause_time >= 2:
                     is_paused = False
                     react = random.choice(reaction)
@@ -400,6 +400,7 @@ while running:
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
                             nome_rect = nome_surface.get_rect(center=(
                             SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5 + index * 30))
+
                             screen.blit(nome_surface, nome_rect)
 
                     else:
@@ -414,13 +415,12 @@ while running:
                         screen.blit(message_surface, message_rect)
 
                         message_surface = game_font.render("CREDITS", True, COLOR_WHITE)
-                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
+                        message_rect = message_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3 ))
                         screen.blit(message_surface, message_rect)
 
                         for index, nome in enumerate(credits):
                             nome_surface = game_font.render(nome, True, COLOR_WHITE)
-                            nome_rect = nome_surface.get_rect(center=(
-                            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5 + index * 30))
+                            nome_rect = nome_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5 + index * 30))
                             screen.blit(nome_surface, nome_rect)
 
                     winner_image = pygame.transform.scale(winner_image, (200, 200))
@@ -440,7 +440,7 @@ while running:
                                     reset_game()
                                     waiting_for_restart = False
 
-                                # Draw field
+        # Draw field
         screen.blit(factory_stage, (BORDER_THICKNESS, 80))
         pygame.draw.rect(screen, COLOR_WHITE, (BORDER_THICKNESS, 80, FIELD_WIDTH, FIELD_HEIGHT), BORDER_THICKNESS)
         draw_lives_player(40, player1.life)
